@@ -1,0 +1,8 @@
+node_modules
+bundle.js
+.env
+
+*.log
+*.tmp
+
+.DS_Store

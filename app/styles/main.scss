@@ -1,0 +1,79 @@
+@import 'bootstrap.min';
+@import 'variables';
+
+html, body {
+    height: 100vh;
+    width: 100vw;
+    background-color: $background-color;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.container > main {
+    flex: 1 0 auto;
+}
+
+*::before,
+*,
+*::after {
+  box-sizing: border-box;
+}
+
+header {
+    display: flex;
+    align-items: center;
+}
+
+p {
+    font-size: 1.75rem;
+    color: $text-default-color;
+}
+
+@mixin input-color($color) {
+    $lightColor: lighten($color, 25%);
+    color: $color;
+    border: $border-width solid $color;
+    &:focus {
+        border: $border-width solid $lightColor;
+    }
+}
+
+input {
+    height: 5vh;
+    outline: none;
+}
+
+input.station-entry {
+    width: 100%;
+    @include input-color($brand-color);
+}
+
+input.settings {
+    text-align: center;
+    width: 30px;
+    @include input-color(#ff1744);
+}
+
+.border--bottom {
+    border-bottom: $border-width solid $border-default-color;
+    padding-bottom: 2.5vh;
+}
+
+.typeahead .results {
+    background-color: white;
+    padding: 10px;
+    margin: 1px 0 0 0;
+    border: $border-width solid $border-default-color;
+}
+
+.typeahead li {
+    list-style-type: none;
+}
+
+.typeahead .hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}

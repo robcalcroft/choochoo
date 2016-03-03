@@ -1,0 +1,52 @@
+{
+  "name": "choochoo",
+  "version": "1.0.0",
+  "description": "an investigation into offline web architectures using train timetable data",
+  "main": "index.js",
+  "dependencies": {
+    "babel-eslint": "^5.0.0",
+    "babel-loader": "^6.2.1",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-react": "^6.3.13",
+    "chalk": "^1.1.1",
+    "css-loader": "^0.23.1",
+    "dotenv": "^2.0.0",
+    "eslint": "^2.2.0",
+    "eslint-config-airbnb": "^6.0.2",
+    "eslint-plugin-react": "^4.1.0",
+    "express": "^4.13.4",
+    "file-loader": "^0.8.5",
+    "jquery": "^2.2.0",
+    "materialize-css": "^0.97.5",
+    "md5": "^2.0.0",
+    "moment": "^2.11.2",
+    "morgan": "^1.6.1",
+    "node-sass": "^3.4.2",
+    "nodemon": "^1.8.1",
+    "react": "^0.14.6",
+    "react-dom": "^0.14.6",
+    "react-typeahead": "^1.1.5",
+    "sass-loader": "^3.1.2",
+    "style-loader": "^0.13.0",
+    "underscore": "^1.8.3",
+    "webpack": "^1.12.11"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "node_modules/.bin/webpack -p --progress --colors",
+    "deploy-watch": "node_modules/.bin/webpack --progress --colors --watch",
+    "start": "tput setaf 1;echo \"ENSURE YOU HAVE RUN 'npm run deploy-watch' IN ANOTHER TAB\n\" && NODE_PATH=./lib node_modules/.bin/nodemon -q index.js",
+    "start-prod": "npm run deploy && NODE_PATH=./lib node index.js"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robcalcroft/choochoo.git"
+  },
+  "author": "Rob Calcroft",
+  "bugs": {
+    "url": "https://github.com/robcalcroft/choochoo/issues"
+  },
+  "homepage": "https://github.com/robcalcroft/choochoo#readme"
+}

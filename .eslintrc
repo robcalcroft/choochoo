@@ -1,0 +1,19 @@
+{
+    "extends": "airbnb",
+    "parser": "babel-eslint",
+    "rules": {
+        "comma-dangle": 0,
+        "padded-blocks": [0, "always"],
+        "eqeqeq": [2, "allow-null"],
+        "indent": 0,
+        "jsx-quotes": 0,
+        "react/jsx-indent-props": 0,
+        "react/jsx-no-bind": 0
+    },
+    "globals": {
+        "store": true
+    },
+    "env": {
+        "browser": true
+    }
+}
