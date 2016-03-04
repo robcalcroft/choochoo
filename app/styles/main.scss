@@ -33,6 +33,37 @@ p {
     color: $text-default-color;
 }
 
+.flex {
+    display: flex;
+    @media (max-width: 772px) {
+        display: block;
+    }
+}
+
+.flex-child-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button {
+    border: 2px solid $brand-color;
+    background: $brand-color;
+    padding: 1vh 3vh;
+    color: white;
+    font-weight: bold;
+    outline: none;
+    &:hover {
+        background: darken($brand-color, 5%);
+    }
+    &:active {
+        border-color: darken($brand-color, 5%);
+    }
+    @media (max-width: 772px) {
+        margin-top: 2vh;
+    }
+}
+
 @mixin input-color($color) {
     $lightColor: lighten($color, 25%);
     color: $color;
@@ -55,7 +86,7 @@ input.station-entry {
 input.settings {
     text-align: center;
     width: 30px;
-    @include input-color(#ff1744);
+    @include input-color($brand-red);
 }
 
 .border--bottom {
@@ -63,7 +94,27 @@ input.settings {
     padding-bottom: 2.5vh;
 }
 
+.station-search-title {
+    display: inline-block;
+    @media (max-width: 772px) {
+        display: block;
+    }
+}
+
+.typeahead {
+    position: relative;
+    display: inline-block;
+    padding-left: 1.75vw;
+    @media (max-width: 772px) {
+        display: block;
+        padding-left: auto;
+    }
+}
+
 .typeahead .results {
+    position: absolute;
+    z-index: 10;
+    width: 100%;
     background-color: white;
     padding: 10px;
     margin: 1px 0 0 0;
@@ -76,4 +127,35 @@ input.settings {
 
 .typeahead .hover {
     background-color: rgba(0, 0, 0, 0.05);
+}
+
+.train {
+    border: 2px solid $border-default-color;
+    padding: 1.25vh;
+    margin: 2.5vh auto;
+}
+
+@media (max-width: 772px) {
+    .train > * {
+        padding: 5vh auto;
+    }
+}
+
+.train-list .train:nth-child(1) {
+    border-color: $brand-color;
+}
+
+.filter-location-name {
+    text-align: right;
+    @media (max-width: 772px) {
+        text-align: left;
+    }
+}
+
+.fadein {
+    animation: fadein .25s;
+}
+@keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

@@ -1,4 +1,4 @@
-import path from "path";
+import path from 'path';
 import webpack from 'webpack';
 import dotenv from 'dotenv';
 
@@ -23,10 +23,7 @@ export default {
             {
                 test: /\.js?$/,
                 exclude: /(node_modules|bower_components)/,
-                loader: 'babel-loader',
-                query: {
-                    presets: ['react','es2015']
-                }
+                loader: 'babel-loader'
             },
             {
                 test: /\.s?css$/,
@@ -43,15 +40,6 @@ export default {
             jQuery: 'jquery',
             $: 'jquery',
             'window.jQuery': 'jquery',
-            moment: 'moment'
-        }),
-        new webpack.DefinePlugin({
-          'process.env': {
-            'WISHLIST_CLIENT_ID': `'${process.env.WISHLIST_CLIENT_ID}'`,
-            'WISHLIST_CLIENT_SECRET': `'${process.env.WISHLIST_CLIENT_SECRET}'`,
-            'WISHLIST_REDIRECT_URI': `'${process.env.WISHLIST_REDIRECT_URI}'`,
-            'WISHLIST_BASE_URI': `'${process.env.WISHLIST_BASE_URI}'`
-          }
         })
     ]
 };
