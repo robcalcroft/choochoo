@@ -4,7 +4,8 @@ export default class Train extends React.Component {
     static propTypes = {
         service: React.PropTypes.object.isRequired,
         locationName: React.PropTypes.string.isRequired,
-        infoMessages: React.PropTypes.array.isRequired
+        infoMessages: React.PropTypes.array.isRequired,
+        filterLocationName: React.PropTypes.string.isRequired
     }
 
     getArrivalTime(locationName, callingPoints) {
@@ -46,7 +47,7 @@ export default class Train extends React.Component {
                             arriving at
                             <b> {
                                 this.getArrivalTime(
-                                    destination[0].locationName,
+                                    this.props.filterLocationName,
                                     subsequentCallingPoints[0].callingPoint
                                 )
                             } </b>

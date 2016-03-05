@@ -47,6 +47,7 @@ export default class TrainsList extends React.Component {
                                 key={trainService.serviceID}
                                 service={trainService}
                                 locationName={this.props.locationName}
+                                filterLocationName={this.props.filterLocationName}
                                 infoMessages={this.props.infoMessages}
                             />
                         );
