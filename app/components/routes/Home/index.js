@@ -5,6 +5,8 @@ import _ from 'underscore';
 import forage from 'localforage';
 import moment from 'moment';
 import TrainsList from 'common/TrainsList';
+import ServiceWorker from 'offline-plugin/runtime';
+import 'offline-js';
 
 export default class Home extends React.Component {
 
@@ -13,16 +15,27 @@ export default class Home extends React.Component {
 
         // Set initial state
         this.state = {
-            originInput: '',
-            originCode: '',
-            destinationInput: '',
-            destinationCode: '',
-            originPredictions: [],
-            destinationPredictions: [],
-            offlineMode: false,
-            trainServices: [],
-            trainServicesLastUpdate: moment(),
-            filterLocationName: ''
+            origin: {
+                input: '',
+                code: '',
+                predictions: []
+            },
+            destination: {
+                input: '',
+                code: '',
+                predictions: []
+            },
+            metadata: {
+                stateSaving: false,
+                networkStatus: 'down'
+            },
+            trains: {
+                services: [],
+                lastUpdate: moment(),
+                filterLocationName: '',
+                locationName: '',
+                infoMessages: []
+            }
         };
 
         this.store = forage.createInstance({
@@ -32,24 +45,77 @@ export default class Home extends React.Component {
         // Save the state to offline every 5 seconds
         this.saveStateInterval = setInterval(this.saveState.bind(this), 5000);
 
-        // Component is broken so we have to hack the init value into it
-        // only need to do this once though. See function comments for more.
+        // Check network state every 3 seconds as the events for Offline
+        // sometimes don't trigger :S
+        this.offlineStatusInterval = setInterval(() => window.Offline.check(), 3000);
+
+        // Component is broken so we have to hack the init value into it only
+        // need to do this once though. See function comments for more.
         this.updateTypeaheadValueOnce = _.once(this.updateTypeaheadValue);
 
+        // Install service worker
+        ServiceWorker.install();
+
+        // Load any previously cached state
         this.loadState();
     }
 
+    componentDidMount() {
+        this.registerNetworkStatusBindings();
+    }
+
     componentDidUpdate() {
-        if (this.state.originInput !== '') {
+        if (this.state.origin.input !== '') {
             this.updateTypeaheadValueOnce();
         }
     }
 
-    saveState() {
-        this.store.setItem('state', this.state).then(() => {
-            this.setState({ offlineMode: true });
+    getNetworkStatus(networkStatus) {
+        if (networkStatus === 'down') {
+            const suffix = this.state.metadata.stateSaving ?
+                ' (No new searches can be made but you can use the site whilst offline)' : '';
+            return `Offline${suffix}`;
+        }
+        return 'Online';
+    }
+
+    registerNetworkStatusBindings() {
+        this.setState({
+            metadata: Object.assign({}, this.state.metadata, {
+                networkStatus: window.Offline.state
+            })
+        });
+
+        window.Offline.on('up', () => {
+            this.setState({
+                metadata: Object.assign({}, this.state.metadata, {
+                    networkStatus: 'up'
+                })
+            });
+        });
+
+        window.Offline.on('down', () => {
+            this.setState({
+                metadata: Object.assign({}, this.state.metadata, {
+                    networkStatus: 'down'
+                })
+            });
+        });
+    }
+
+    saveState(prop = 'state', state = this.state) {
+        this.store.setItem(prop, state).then(() => {
+            this.setState({
+                metadata: Object.assign({}, this.state.metadata, {
+                    stateSaving: true
+                })
+            });
         }, () => {
-            this.setState({ offlineMode: false });
+            this.setState({
+                metadata: Object.assign({}, this.state.metadata, {
+                    stateSaving: false
+                })
+            });
         });
     }
 
@@ -63,16 +129,17 @@ export default class Home extends React.Component {
     }
 
     // Hack to fix broken component :|
-    // Issue stems from the fact that the component can't have the 'value' or 'defaultValue'
-    // prop updated via state; it only seems to render once. Annoying, however this is the
-    // best typeahead comp I've found, others are too bloated/shit.
+    // Issue stems from the fact that the component can't have the 'value' or
+    // 'defaultValue' prop updated via state; it only seems to render once.
+    // Annoying, however this is the best typeahead comp I've found, others are
+    // too bloated/shit.
     updateTypeaheadValue() {
-        if (this.state.originInput) {
-            this.refs.originStation.setEntryText(this.state.originInput);
+        if (this.state.origin.input) {
+            this.refs.originStation.setEntryText(this.state.origin.input);
             this.refs.originStation.focus();
         }
-        if (this.state.destinationInput) {
-            this.refs.destinationStation.setEntryText(this.state.destinationInput);
+        if (this.state.destination.input) {
+            this.refs.destinationStation.setEntryText(this.state.destination.input);
         }
     }
 
@@ -83,7 +150,9 @@ export default class Home extends React.Component {
             element.id === 'originStation' ? 'origin' : 'destination';
 
         this.setState({
-            [`${stationType}Input`]: value
+            [`${stationType}`]: Object.assign({}, this.state[`${stationType}`], {
+                input: value
+            })
         });
 
         // Stop tab triggering call
@@ -92,7 +161,7 @@ export default class Home extends React.Component {
             return false;
         }
 
-        if (value.length < 4) {
+        if (value.length < 3) {
             return false;
         }
 
@@ -104,7 +173,9 @@ export default class Home extends React.Component {
             }
         }).done(data => {
             this.setState({
-                [`${stationType}Predictions`]: data
+                [`${stationType}`]: Object.assign({}, this.state[`${stationType}`], {
+                    predictions: data
+                })
             });
         }).fail(error => {
             console.log(error);
@@ -116,15 +187,19 @@ export default class Home extends React.Component {
 
         if (parent.attr('id') === 'originStation') {
             this.setState({
-                originInput: option.stationName,
-                originCode: option.crsCode,
-                originPredictions: []
+                origin: {
+                    input: option.stationName,
+                    code: option.crsCode,
+                    predictions: []
+                }
             });
         } else if (parent.attr('id') === 'destinationStation') {
             this.setState({
-                destinationInput: option.stationName,
-                destinationCode: option.crsCode,
-                destinationPredictions: []
+                destination: {
+                    input: option.stationName,
+                    code: option.crsCode,
+                    predictions: []
+                }
             });
         }
 
@@ -132,26 +207,40 @@ export default class Home extends React.Component {
     }
 
     searchTrains() {
-        if (!this.state.originInput || !this.state.originInput) {
+        if (!this.state.origin.input || !this.state.destination.input) {
             this.setState({
-                trainServices: [],
-                trainServicesLastUpdate: moment(),
-                filterLocationName: ''
+                trains: {
+                    services: [],
+                    lastUpdate: moment(),
+                    filterLocationName: '',
+                    locationName: '',
+                    infoMessages: []
+                }
             });
-            return alert('Oops, no \'from\' or \'to\' specified');
+            return alert('Oops, no \'from\' or \'to\' specified' +
+                ' (ensure you selected the items by clicking, not by hitting enter or tab)'
+            );
+        }
+
+        if (this.state.metadata.networkStatus === 'down') {
+            return false;
         }
 
         return $.ajax({
             url: '/api-proxy',
             method: 'GET',
             data: {
-                uri: `/departures/${this.state.originInput}/to/${this.state.destinationInput}`
+                uri: `/departures/${this.state.origin.input}/to/${this.state.destination.input}`
             }
         }).done(data => {
             this.setState({
-                trainServices: data.trainServices === null ? [] : data.trainServices,
-                trainServicesLastUpdate: data.generatedAt,
-                filterLocationName: data.filterLocationName
+                trains: {
+                    services: data.trainServices || [],
+                    lastUpdate: data.generatedAt,
+                    filterLocationName: data.filterLocationName,
+                    locationName: data.locationName,
+                    infoMessages: data.nrccMessages || []
+                }
             });
         }).fail(error => {
             console.log(error);
@@ -174,8 +263,12 @@ export default class Home extends React.Component {
                                 <input className='settings' type='text' placeholder='5' />
                             </div>
                             <div className='col-sm-12 col-md-3' style={{paddingTop: '1vh'}}>
-                                <b>Offline mode&nbsp;</b>
-                                {this.state.offlineMode ? 'Active' : 'Inactive'}
+                                <b>State saving&nbsp;</b>
+                                {this.state.metadata.stateSaving ? 'Active' : 'Inactive'}
+                            </div>
+                            <div className='col-sm-12 col-md-3' style={{paddingTop: '1vh'}}>
+                                <b>Network status&nbsp;</b>
+                                {this.getNetworkStatus(this.state.metadata.networkStatus)}
                             </div>
                         </div>
                     </div>
@@ -183,7 +276,7 @@ export default class Home extends React.Component {
                         <div className='col-sm-12 col-md-3'>
                             <h2 className='station-search-title'>From</h2>
                             <Typeahead
-                                options={this.state.originPredictions}
+                                options={this.state.origin.predictions}
                                 maxVisible={20}
                                 customClasses={{
                                     input: 'station-entry',
@@ -201,7 +294,7 @@ export default class Home extends React.Component {
                         <div className='col-sm-12 col-md-offset-3 col-md-3'>
                             <h2 className='station-search-title'>To</h2>
                                 <Typeahead
-                                    options={this.state.destinationPredictions}
+                                    options={this.state.destination.predictions}
                                     maxVisible={10}
                                     customClasses={{
                                         input: 'station-entry',
@@ -217,13 +310,21 @@ export default class Home extends React.Component {
                                 />
                         </div>
                         <div className='col-sm-12 col-md-3 flex-child-center'>
-                            <button onClick={this.searchTrains.bind(this)}>Search</button>
+                            <button
+                                className={
+                                    this.state.metadata.networkStatus === 'down' ?
+                                    'disabled' : ''
+                                }
+                                onClick={this.searchTrains.bind(this)}
+                            >Search</button>
                         </div>
                     </div>
                     <TrainsList
-                        trainServices={this.state.trainServices}
-                        lastUpdate={this.state.trainServicesLastUpdate}
-                        filterLocationName={this.state.filterLocationName}
+                        trainServices={this.state.trains.services}
+                        lastUpdate={this.state.trains.lastUpdate}
+                        filterLocationName={this.state.trains.filterLocationName}
+                        locationName={this.state.trains.locationName}
+                        infoMessages={this.state.trains.infoMessages}
                     />
                 </main>
                 <footer>

@@ -1,6 +1,8 @@
 import path from 'path';
 import webpack from 'webpack';
 import dotenv from 'dotenv';
+import OfflinePlugin from 'offline-plugin';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 dotenv.load();
 
@@ -39,7 +41,22 @@ export default {
         new webpack.ProvidePlugin({
             jQuery: 'jquery',
             $: 'jquery',
-            'window.jQuery': 'jquery',
+            'window.jQuery': 'jquery'
+        }),
+        new HtmlWebpackPlugin({
+            title: 'Live Train Times',
+            template: path.resolve(__dirname, 'app/index.html'),
+            favicon: path.resolve(__dirname, 'app/assets/favicon.ico')
+        }),
+        new OfflinePlugin({
+            caches: 'all',
+            scope: '/',
+            updateStrategy: 'all',
+            AppCache: false,
+            version: 'v1',
+            ServiceWorker: {
+                output: 'sw.js'
+            }
         })
     ]
 };

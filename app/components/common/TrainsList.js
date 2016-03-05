@@ -9,7 +9,9 @@ export default class TrainsList extends React.Component {
             React.PropTypes.string.isRequired,
             React.PropTypes.object.isRequired
         ]),
-        filterLocationName: React.PropTypes.string.isRequired
+        filterLocationName: React.PropTypes.string.isRequired,
+        locationName: React.PropTypes.string.isRequired,
+        infoMessages: React.PropTypes.array.isRequired
     }
 
     static defaultProps = {
@@ -21,10 +23,10 @@ export default class TrainsList extends React.Component {
         return (
             <div id='trains' className='border--bottom'>
                 <div className='row'>
-                    <div className='col-sm-12 col-md-6'>
+                    <div className='col-sm-6'>
                         Last updated <b>{moment(this.props.lastUpdate).fromNow()}</b>
                     </div>
-                    <div className='col-sm-12 col-md-6 filter-location-name'>
+                    <div className='col-sm-6 filter-location-name'>
                         {
                             this.props.filterLocationName !== '' ?
                             <span>Travelling to <b>{this.props.filterLocationName}</b></span> : ''
@@ -44,6 +46,8 @@ export default class TrainsList extends React.Component {
                             <Train
                                 key={trainService.serviceID}
                                 service={trainService}
+                                locationName={this.props.locationName}
+                                infoMessages={this.props.infoMessages}
                             />
                         );
                     })()
