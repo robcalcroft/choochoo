@@ -72,9 +72,21 @@ export default class Home extends React.Component {
     }
 
     getNetworkStatus(networkStatus) {
+        const readyForOffline = !!window.navigator.serviceWorker;
+        const canSaveState = this.state.metadata.stateSaving;
+        let suffix = '';
+
+        // Ensure the user knows what the sitch is
         if (networkStatus === 'down') {
-            const suffix = this.state.metadata.stateSaving ?
-                ' (No new searches can be made but you can use the site whilst offline)' : '';
+            if (readyForOffline && canSaveState) {
+                suffix = ' (Available offline and progress will be saved)';
+            } else if (readyForOffline && !canSaveState) {
+                suffix = ' (Available offline but progress won\'t be saved)';
+            } else if (!readyForOffline && canSaveState) {
+                suffix = ' (Not available offline but progress saving is active)';
+            } else if (!readyForOffline && !canSaveState) {
+                suffix = ' (Not available offline and progress is not being saved)';
+            }
             return `Offline${suffix}`;
         }
         return 'Online';
@@ -270,6 +282,12 @@ export default class Home extends React.Component {
                             <div className='col-sm-12 col-md-3' style={{paddingTop: '1vh'}}>
                                 <b>Network status&nbsp;</b>
                                 {this.getNetworkStatus(this.state.metadata.networkStatus)}
+                            </div>
+                            <div className='col-sm-12 col-md-3' style={{paddingTop: '1vh'}}>
+                                <b>Ready for offline&nbsp;</b>
+                                {window.navigator.serviceWorker ?
+                                    'Yes' : 'No (browser lacks support)'
+                                }
                             </div>
                         </div>
                     </div>
