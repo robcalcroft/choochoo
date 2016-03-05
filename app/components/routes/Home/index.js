@@ -46,7 +46,8 @@ export default class Home extends React.Component {
         this.saveStateInterval = setInterval(this.saveState.bind(this), 5000);
 
         // Check network state every 3 seconds as the events for Offline
-        // sometimes don't trigger :S
+        // sometimes don't trigger, this makes favicon calls a lot so a TODO :S
+        // is to remove it in the future
         this.offlineStatusInterval = setInterval(() => window.Offline.check(), 3000);
 
         // Component is broken so we have to hack the init value into it only
@@ -173,7 +174,7 @@ export default class Home extends React.Component {
             }
         }).done(data => {
             this.setState({
-                [`${stationType}`]: Object.assign({}, this.state[`${stationType}`], {
+                [`${stationType}`]: Object.assign({}, this.state[stationType], {
                     predictions: data
                 })
             });
