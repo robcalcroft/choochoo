@@ -57,6 +57,9 @@ export default class Home extends React.Component {
         // Install service worker
         ServiceWorker.install();
 
+        // Create snapshot if doesn't exist
+        this.createSnapshots();
+
         // Load any previously cached state
         this.loadState();
     }
@@ -138,6 +141,38 @@ export default class Home extends React.Component {
                 this.setState(state);
                 this.saveState();
             }
+        });
+    }
+
+    createSnapshots() {
+        this.store.getItem('snapshots').then(snapshots => {
+            if (!snapshots) {
+                this.store.setItem('snapshots', []).catch(err => {
+                    throw new Error('Error whilst saving snapshot', err);
+                });
+            }
+        });
+    }
+
+    saveSnapshot(state = this.state) {
+        this.store.getItem('snapshots').then(snapshots => {
+
+            let newSnapshots = [];
+
+            snapshots.push(state);
+
+            if (snapshots.length === 6) {
+                newSnapshots = snapshots.slice(1, snapshots.length);
+            } else {
+                newSnapshots = snapshots;
+            }
+
+            this.store.setItem('snapshots', newSnapshots).catch(err => {
+                console.log(err);
+                if (err) {
+                    throw new Error('Error whilst saving snapshot', err);
+                }
+            });
         });
     }
 
@@ -238,6 +273,8 @@ export default class Home extends React.Component {
         if (this.state.metadata.networkStatus === 'down') {
             return false;
         }
+
+        this.saveSnapshot(this.state);
 
         return $.ajax({
             url: '/api-proxy',
