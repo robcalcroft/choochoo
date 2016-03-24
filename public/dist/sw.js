@@ -2,7 +2,9 @@ var __wpo = {
   "assets": {
     "main": [
       "/f3be2e30f119a1a9b0fdee9fc1f477a9.png",
-      "/bundle.js"
+      "/bundle.js",
+      "/favicon.ico",
+      "/"
     ],
     "additional": [],
     "optional": []
